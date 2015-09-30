@@ -1,0 +1,85 @@
+﻿.row
+  .col-md-12
+    // BEGIN PAGE TITLE & BREADCRUMB
+    h3.page-title
+      | Add New Site
+      small &nbsp;Add your websites to our tracking system
+    ul.page-breadcrumb.breadcrumb
+      li
+        i.fa.fa-home
+        a(style="color:grey;text-decoration:none;cursor:default") Home
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") My Sites
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") Add New Site
+      li.pull-right
+        #dashboard-report-range.dashboard-date-range.tooltips(data-placement="top", data-original-title="Change dashboard date range")
+          i.fa.fa-calendar
+          span
+          i.fa.fa-angle-down
+.row
+  .col-md-12
+    // BEGIN SAMPLE FORM PORTLET
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Website Information
+        .tools
+          a.collapse(href="")
+          a.config(href="#portlet-config", data-toggle="modal")
+          a.reload(href="")
+          a.remove(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+              label Website Title
+              input.form-control(type="text", placeholder="Enter your domain" ng-model="title")
+            .form-group
+              label Domain Address
+              input.form-control(type="text", placeholder="Enter your domain" ng-model="url")
+              span.help-block
+                | Example: example.com
+            .form-group
+              button.btn.btn-info(type="button" ng-click="toStep(2)") Next Step
+    .portlet(ng-show="form2")
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Website Tracking Code
+        .tools
+          a.collapse(href="")
+          a.config(href="#portlet-config", data-toggle="modal")
+          a.reload(href="")
+          a.remove(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+              label Add this code to your html head, and visit your website using your browser.
+              pre {{code}}
+            .form-group
+              button.btn.btn-info(type="button" ng-click="toStep(3)") Next Step
+    .portlet(ng-show="form3")
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Code Tracking
+        .tools
+          a.collapse(href="")
+          a.config(href="#portlet-config", data-toggle="modal")
+          a.reload(href="")
+          a.remove(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+              label(style="color:red;" ng-if="!formsDone") Waiting a signal from your website, be sure that you completed part 2 correctly. If you didn't please repeat part 2.
+              label(style="color:green;" ng-if="formsDone") Tracking system integrated with your website.
+            .form-group
+              button.btn(type="button" ng-disabled="!formsDone" click="top.location.href=top.location.href;").btn-success
+                i.fa.fa-spinner.fa-spin(ng-if="!formsDone")
+                | &nbsp;Register

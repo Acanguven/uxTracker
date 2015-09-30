@@ -1,0 +1,45 @@
+.row
+ .col-md-12
+  h3.page-title
+   | Tracking Settings
+   small &nbsp;Advanced tracking settings of {{website.title}}
+  ul.page-breadcrumb.breadcrumb
+   li
+    i.fa.fa-home
+    a(style="color:grey;text-decoration:none;cursor:default") Home
+    i.fa.fa-angle-right
+   li
+    a(style="color:grey;text-decoration:none;cursor:default") Advanced Settings
+    i.fa.fa-angle-right
+   li
+    a(style="color:grey;text-decoration:none;cursor:default") {{website.title}}
+   li.pull-right
+    #dashboard-report-range.dashboard-date-range.tooltips(data-placement="top")
+     i.fa.fa-calendar
+     span
+     i.fa.fa-angle-down
+.row
+  .col-md-12
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Edit Mode
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            label Don't forget using Advanced options will make UxTracker to only track your selected objects.
+            .form-group
+              button.btn.btn-info(type="button" ng-click="enableEdit('true')" ng-if="!website.settings.advancedMode") Enable Edit Mode
+              button.btn.btn-info(type="button" ng-click="enableEdit('false')" ng-if="website.settings.advancedMode") Disable Edit Mode
+    .portlet(ng-if="website.settings.advancedMode")
+        .portlet-title
+          .caption
+            i.fa.fa-reorder
+            | Edit Mode
+        .portlet-body.form
+          form(role="form")
+            .form-body
+              label Your website will be transfrom in to edit mode just for your computer. Your users will be able to use your website as normal as before.
+              .form-group
+                button.btn.btn-info(type="button" ng-click="transform()") Transform Website

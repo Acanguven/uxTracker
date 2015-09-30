@@ -1,0 +1,130 @@
+﻿.row
+ .col-md-12
+  h3.page-title
+   | Tracking Settings
+   small &nbsp;Tracking settings of {{website.title}}
+  ul.page-breadcrumb.breadcrumb
+   li
+    i.fa.fa-home
+    a(style="color:grey;text-decoration:none;cursor:default") Home
+    i.fa.fa-angle-right
+   li
+    a(style="color:grey;text-decoration:none;cursor:default") Tracking Settings
+    i.fa.fa-angle-right
+   li
+    a(style="color:grey;text-decoration:none;cursor:default") {{website.title}}
+   li.pull-right
+    #dashboard-report-range.dashboard-date-range.tooltips(data-placement="top")
+     i.fa.fa-calendar
+     span
+     i.fa.fa-angle-down
+.row
+  .col-md-6
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Live Tracking Options
+        .tools
+          a.collapse(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+             div(style="height:100px;")
+              .form-group
+                label.col-md-3.control-label Realtime Options
+                .col-md-9
+                  .checkbox-list
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('path')}")  
+                       input(type="checkbox" ng-model="website.settings.path")
+                     | Path Tracking
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('count')}")  
+                       input(type="checkbox" ng-model="website.settings.count")
+                     | Count Tracking
+  .col-md-6
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Mouse Tracking Options
+        .tools
+          a.collapse(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+             div(style="height:100px;")
+              .form-group
+                label.col-md-3.control-label Mouse Options
+                .col-md-9
+                  .checkbox-list
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('eye')}")  
+                       input(type="checkbox" ng-model="website.settings.eye")
+                     | Eye Tracker
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('line')}")  
+                       input(type="checkbox" ng-model="website.settings.line")
+                     | Line Tracker
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('click')}")  
+                       input(type="checkbox" ng-model="website.settings.click")
+                     | Click Tracker
+.row
+  .col-md-6
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Form Tracking Options
+        .tools
+          a.collapse(href="")
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+             div(style="height:100px;")
+              .form-group
+                label.col-md-3.control-label Forms
+                .col-md-9
+                  .checkbox-list
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('form')}")    
+                       input(type="checkbox" ng-model="website.settings.form")
+                     | Form Tracker
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('mistake')}")  
+                       input(type="checkbox" ng-model="website.settings.mistake")
+                     | Mistake Collector
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked('time')}")  
+                       input(type="checkbox" ng-model="website.settings.time")
+                     | Time Based Tracking
+  .col-md-6
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Information
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            .form-group
+               div(style="height:100px;")
+                .col-md-12
+                  ul
+                    li Advanced mode options can be found in sidebar.
+                    li Your advanced settings will use these these options to decide tracking logic.
+                    li Unchecked options will not be recorded. You can't see previous actions when you enable them.
+                    li Unchecking and checking does not delete your history.

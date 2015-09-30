@@ -1,0 +1,20 @@
+.row
+  .col-md-12
+    h3.page-title
+      | {{website.title}} Dashboard
+      small &nbsp;
+    ul.page-breadcrumb.breadcrumb
+      li
+        i.fa.fa-home
+        a(style="color:grey;text-decoration:none;cursor:default") Home
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") My Sites
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") {{website.title}}
+      li.pull-right
+        #dashboard-report-range.dashboard-date-range.tooltips(data-placement="top")
+          i.fa.fa-calendar
+          span
+          i.fa.fa-angle-down

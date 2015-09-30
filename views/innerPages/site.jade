@@ -1,0 +1,80 @@
+﻿.row
+  .col-md-12
+    h3.page-title
+      | {{website.title}} Dashboard
+      small &nbsp;
+    ul.page-breadcrumb.breadcrumb
+      li
+        i.fa.fa-home
+        a(style="color:grey;text-decoration:none;cursor:default") Home
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") My Sites
+        i.fa.fa-angle-right
+      li
+        a(style="color:grey;text-decoration:none;cursor:default") {{website.title}}
+      li.pull-right
+        #dashboard-report-range.dashboard-date-range.tooltips(data-placement="top")
+          i.fa.fa-calendar
+          span
+          i.fa.fa-angle-down
+  .col-md-12
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Live Counter
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        #liveDataCount.chart
+  .col-md-6(ng-show="website.settings.path")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Path Tracking
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        #flowd3
+  .col-md-6(ng-show="website.settings.count")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Count Tracking
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        #pie_chart_path.chart
+  .col-md-6(ng-show="website.settings.eye")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Eye Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#eyeTracker(style="width:100%;height:420px;")      
+  .col-md-6(ng-show="website.settings.line")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Line Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#lineTracker(style="width:100%;height:420px;")        
+  .col-md-6(ng-show="website.settings.click")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Click Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#clickTracker(style="width:100%;height:420px;")         

@@ -1,0 +1,53 @@
+﻿ul.page-sidebar-menu
+	li.sidebar-toggler-wrapper
+		.sidebar-toggler
+		.clearfix
+	li.start.active(ng-click="navSelect($event)")
+		a(href="#/Dashboard")
+			i.fa.fa-home
+			span.title
+				| Dashboard
+			span.selected
+	li
+		a(href="javascript:;")
+			i.fa.fa-sitemap
+			span.title
+				| My Sites
+			span.arrow
+		ul.sub-menu
+			li(ng-repeat="site in sites")
+				a 
+					| {{site.title}}
+					span.arrow
+				ul.sub-menu
+					li
+						a(href="#/site/{{site.id}}" ng-click="navSelect($event)")
+							i.fa.fa-globe
+							| &nbsp;Tracking Reports
+					li
+						a(href="#/form/{{site.id}}" ng-click="navSelect($event)")
+							i.fa.fa-globe
+							| &nbsp;Form Reports
+			li
+				a(href="#/AddNewSite" ng-click="navSelect($event)")
+					| Add New Site
+		li
+			a(href="javascript:;")
+				i.fa.fa-wrench
+				span.title
+					| Tracking Settings
+				span.arrow
+			ul.sub-menu
+				li(ng-repeat="site in sites")
+					a 
+						| {{site.title}}
+						span.arrow
+					ul.sub-menu
+						li
+							a(href="#/sitesettings/{{site.id}}" ng-click="navSelect($event)")
+								i.fa.fa-globe
+								| &nbsp;Global Settings
+						li
+							a(href="#/advancedsettings/{{site.id}}" ng-click="navSelect($event)")
+								i.fa.fa-globe
+								| &nbsp;Advanced Settings
