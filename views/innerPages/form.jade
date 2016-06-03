@@ -1,7 +1,7 @@
 .row
   .col-md-12
     h3.page-title
-      | {{website.title}} Dashboard
+      | {{website.title}} Advanced Reports
       small &nbsp;
     ul.page-breadcrumb.breadcrumb
       li
@@ -18,3 +18,46 @@
           i.fa.fa-calendar
           span
           i.fa.fa-angle-down
+  .col-md-12
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Edit Mode
+      .portlet-body.form
+        form(role="form")
+          .form-body
+            label Track information based on objects
+            .form-group
+              select.form-control(ng-model="sFilt")
+                option(ng-repeat="filter in website.settings.filters" ng-value="filter.filter") {{filter.filter}}
+  .col-md-6(ng-show="selectedFilter.click")          
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Click Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#clickTracker(style="width:100%;height:420px;")      
+  .col-md-6(ng-show="selectedFilter.line")   
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Line Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#lineTracker(style="width:100%;height:420px;")     
+  .col-md-6(ng-show="selectedFilter.eye")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Eye Tracker
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas#eyeTracker(style="width:100%;height:420px;")     

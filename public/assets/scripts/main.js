@@ -73,12 +73,31 @@ app.factory('websocketService', function () {
 });
 
 app.controller("Form", function($scope, service, $http, $routeParams){
+
+  var eyeCanvas = document.getElementById('eyeTracker');
+  eyeCanvas.setAttribute('width', $("#eyeTracker").width());
+  eyeCanvas.setAttribute('height', $("#eyeTracker").height());
+  var clickCanvas = document.getElementById('clickTracker');
+  clickCanvas.setAttribute('width', $("#eyeTracker").width());
+  clickCanvas.setAttribute('height', $("#eyeTracker").height());
+  var lineCanvas = document.getElementById('lineTracker');
+  lineCanvas.setAttribute('width', $("#eyeTracker").width());
+  lineCanvas.setAttribute('height', $("#eyeTracker").height());
+  var eyectx = eyeCanvas.getContext('2d');
+  var clickctx = clickCanvas.getContext('2d');
+  var linectx = lineCanvas.getContext('2d');
+  eyectx.font = "30px Arial";
+  eyectx.fillText("Loading stats...",10,50);
+  clickctx.font = "30px Arial";
+  clickctx.fillText("Loading stats...",10,50);
+  linectx.font = "30px Arial";
+  linectx.fillText("Loading stats...",10,50);
+
   App.initUniform();
   $scope.website = false;
   $http.post("../api/getWebsite", { token: uxToken, id: $routeParams.id }).success(function (data) {
     if (data.type == "siteSettingsDetail") {
       $scope.website = data.site;
-      console.log(data)
     } else {
       $scope.website = false;
     }
@@ -87,17 +106,76 @@ app.controller("Form", function($scope, service, $http, $routeParams){
   var updates;
   $http.post("../api/getUpdates", { token: uxToken, id: $routeParams.id }).success(function (data) {
     updates = data;
-    console.log(updates);
   });
+
+
+
+  $scope.$watch("sFilt", function(){
+    if($scope.website && $scope.website.settings && $scope.website.settings.filters){
+      $scope.website.settings.filters.forEach(function(filter){
+        if (filter.filter == $scope.sFilt){
+          $scope.selectedFilter = filter;
+        }
+      });
+    }
+  });
+
+  $http.post("../api/requestSnapSelector", { token: uxToken, id: $routeParams.id,selector:"html>body>div:nth-child(7)>div:nth-child(2)>div>div:nth-child(2)" }).success(function (data) {
+    var img = new Image;
+    img.src = data;
+
+    img.onload = function(){
+      drawImageScaled(img,eyectx);
+      drawImageScaled(img,clickctx);
+      drawImageScaled(img,linectx);
+
+
+      //work mouseline
+      for(var x = 0; x < updates.mouseLines.length; x++){
+
+        if(x  < updates.mouseLines.length - 1){
+          var Hratio1 = lineCanvas.width*updates.mouseLines[x].x/updates.mouseLines[x].width;
+          var Hratio2 = lineCanvas.width*updates.mouseLines[x+1].x/updates.mouseLines[x+1].width;
+          var Vratio1 = lineCanvas.height*updates.mouseLines[x].y/updates.mouseLines[x].height;
+          var Vratio2 = lineCanvas.height*updates.mouseLines[x+1].y/updates.mouseLines[x+1].height;
+          linectx.beginPath();
+          linectx.moveTo(Hratio2, Vratio2);
+          linectx.lineTo(Hratio1, Vratio1);
+          linectx.stroke();
+        }
+      }
+
+      for(var x = 0; x < updates.clickTracks.length; x++){
+        if(x  < updates.mouseLines.length - 1){
+          var Hratio1 = lineCanvas.width*updates.clickTracks[x].x/updates.clickTracks[x].width;
+          var Vratio1 = lineCanvas.height*updates.clickTracks[x].y/updates.clickTracks[x].height;
+          clickctx.fillStyle="#FF0000";
+          clickctx.fillRect(Hratio1, Vratio1, 6, 6);
+        }
+      }
+    };
+
+  });
+
+  function drawImageScaled(img, ctx) {
+    var height = ($("#clickTracker").width()*1080)/1920;
+    ctx.clearRect(0, 0, $("#clickTracker").width(), $("#clickTracker").height());
+    ctx.drawImage(img,0,0,1920,1080,0,0,$("#clickTracker").width(),height);
+  }
 });
 
 app.controller("AdvancedSettings", function($scope,$http,$routeParams,websocketService ){
   App.initUniform();
+  $scope.transformDone = false;
   $scope.website = false;
   $http.post("../api/getWebsite", { token: uxToken, id: $routeParams.id }).success(function (data) {
     if (data.type == "siteSettingsDetail") {
       $scope.website = data.site;
-      console.log(data)
+      if($scope.website.settings.filters){
+        $scope.filters = $scope.website.settings.filters;
+      }else{
+        $scope.filters = [];
+      }
     } else {
       $scope.website = false;
     }
@@ -112,20 +190,49 @@ app.controller("AdvancedSettings", function($scope,$http,$routeParams,websocketS
   });
 
   $scope.commander = function(data){
-    alert(data);
+    if (data.type == "transformDone"){
+      $scope.transformDone = true;
+    }
+    if (data.type == "addTrackerFilter"){
+      var filter = angular.copy(data);
+      filter.eye = false;
+      filter.click = true;
+      filter.line = true;
+      $scope.filters.push(filter);
+      $scope.updateFilters();
+    }
+  }
+
+  $scope.$watch("filters", function(){
+    $scope.updateFilters();
+  },true);
+
+  $scope.updateFilters = function(){
+    $http.post("../api/editFilters", { token: uxToken, id: $routeParams.id, filters:$scope.filters }).success(function (data) {
+      
+    });
   }
 
   $scope.enableEdit = function(bl){
     $http.post("../api/enableAdvanced", { token: uxToken, id: $routeParams.id, set:JSON.parse(bl) }).success(function (data) {
       if (data.type == "modeUpdate") {
         $scope.website.settings.advancedMode = data.message;
-        console.log(data);
+        location.reload();
       }
     });
   }
 
   $scope.transform = function(){
     $scope.ws.send(JSON.stringify({ type: "enableEditMode", id: ($scope.website.uniqueKey ? $scope.website.uniqueKey : "") }));
+  }
+
+
+  $scope.isChecked = function(attr){
+    if(attr){
+      return true;
+    }else{
+      return false;
+    }
   }
 });
 
@@ -157,6 +264,8 @@ app.controller("body", function ($scope, $interval, service, $http) {
   service.siteUpdateCallback(function (data) {
     $scope.sites = data;
   });
+
+
 
   service.siteUpdateRequest();
 });
@@ -227,7 +336,6 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   websocketService.start("ws://localhost:8080", function (ws) {
     $scope.ws = ws;
     $scope.intPromise = $interval(function () {
-      console.log("Requesting :" + $scope.website.uniqueKey)
       $scope.ws.send(JSON.stringify({ type: "requestLiveStats", id: ($scope.website.uniqueKey ? $scope.website.uniqueKey : "") }))
     },1000);
   }, function (msg) {
@@ -419,7 +527,6 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   var updates;
   $http.post("../api/getUpdates", { token: uxToken, id: $routeParams.id }).success(function (data) {
     updates = data;
-    console.log(updates);
   });
 
   $http.post("../api/requestSnap", { token: uxToken, id: $routeParams.id }).success(function (data) {
@@ -459,7 +566,7 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   });
 
   function drawImageScaled(img, ctx) {
-    var height = $("#eyeTracker").width()*1080/1920;
+    var height = $("#eyeTracker").height();
     ctx.clearRect(0, 0, $("#eyeTracker").width(), $("#eyeTracker").height());
     ctx.drawImage(img,0,0,1920,1080,0,0,$("#eyeTracker").width(),height);
   }

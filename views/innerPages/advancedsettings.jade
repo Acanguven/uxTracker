@@ -43,3 +43,30 @@
               label Your website will be transfrom in to edit mode just for your computer. Your users will be able to use your website as normal as before.
               .form-group
                 button.btn.btn-info(type="button" ng-click="transform()") Transform Website
+    .portlet
+        .portlet-title
+          .caption
+            i.fa.fa-reorder
+            | Edit Mode Selections
+        .portlet-body.form
+          form(role="form" ng-repeat="filter in filters" style="height:100px;border-bottom:1px solid #ccc;margin-bottom:15px;")
+            .form-body
+              .form-group
+                label.col-md-3.control-label {{filter.filter}}
+                .col-md-9
+                  .checkbox-list
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked(filter.eye)}")  
+                       input(type="checkbox" ng-model="filter.eye")
+                     | Eye Tracker
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked(filter.line)}")  
+                       input(type="checkbox" ng-model="filter.line")
+                     | Line Tracker
+                    label
+                     .checker
+                      span(ng-class="{checked: isChecked(filter.click)}")  
+                       input(type="checkbox" ng-model="filter.click")
+                     | Click Tracker         

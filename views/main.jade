@@ -10,9 +10,21 @@ block content
 				a.navbar-brand(href='#/Dashboard')
 					img.img-responsive(src='assets/img/logo.png', alt='logo')
 				form.search-form.search-form-header(role='form', action='index.html')
-					.input-icon.right
+					.input-icon.right(style="float:left;")
 						i.fa.fa-search
 						input.form-control.input-medium.input-sm(type='text', name='query', placeholder='Search...')
+					.pack(style="float:left;color:white;margin-top: 5px;font-size: 15px;margin-left: 10px;width: 300px;")
+						if pack === 1
+							img.item(title='Image of Cover', src='img/icon-47.png' style="float: left;height: 20px;margin-right: 10px;")
+							| Starter Plan 
+						else if pack === 2
+							img.item(title='Image of Cover', src='img/icon-48.png' style="float: left;height: 20px;margin-right: 10px;")
+							| Advanced Plan 
+						else if pack === 3
+							img.item(title='Image of Cover', src='img/icon-49.png' style="float: left;height: 20px;margin-right: 10px;")
+							| Premium Plan 
+						else if pack === 0
+							| Free Plan 
 				a.navbar-toggle(href='javascript:;', data-toggle='collapse', data-target='.navbar-collapse')
 					img(src='assets/img/menu-toggler.png', alt='')
 				ul.nav.navbar-nav.pull-right

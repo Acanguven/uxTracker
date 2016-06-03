@@ -24,10 +24,10 @@
 						a(href="#/site/{{site.id}}" ng-click="navSelect($event)")
 							i.fa.fa-globe
 							| &nbsp;Tracking Reports
-					li
+					li(ng-if="site.settings.advancedMode > 0") 
 						a(href="#/form/{{site.id}}" ng-click="navSelect($event)")
 							i.fa.fa-globe
-							| &nbsp;Form Reports
+							| &nbsp;Advanced Reports
 			li
 				a(href="#/AddNewSite" ng-click="navSelect($event)")
 					| Add New Site
@@ -47,7 +47,8 @@
 							a(href="#/sitesettings/{{site.id}}" ng-click="navSelect($event)")
 								i.fa.fa-globe
 								| &nbsp;Global Settings
-						li
-							a(href="#/advancedsettings/{{site.id}}" ng-click="navSelect($event)")
-								i.fa.fa-globe
-								| &nbsp;Advanced Settings
+						if pack !== 0
+							li
+								a(href="#/advancedsettings/{{site.id}}" ng-click="navSelect($event)")
+									i.fa.fa-globe
+									| &nbsp;Advanced Settings

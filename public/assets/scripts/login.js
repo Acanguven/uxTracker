@@ -1,5 +1,4 @@
 var Login = function () {
-
 	var handleLogin = function() {
 		$('.login-form').validate({
 	            errorElement: 'span', //default input error message container
@@ -260,6 +259,10 @@ var Login = function () {
 var login = angular.module("uxp", []);
 
 login.controller("login", function ($scope, $http, $location) {
+	var payment = false;
+	if (top.location.href.indexOf("#/p=")){
+		payment = top.location.href.split("#/p=")[1];
+	}
     $("body").addClass("login"); 
     $scope.error = "";
     $scope.success = "";
@@ -268,7 +271,12 @@ login.controller("login", function ($scope, $http, $location) {
             $http.post("../api/login", { username: $scope.username, password: $scope.password }).success(function (data) {
                 if (data.type != "err") {
                     if (data.type == "auth" && data.token) {
-                        top.location.href = "/auth?t=" + data.token;
+                    	if (payment !== false){
+                    		top.location.href = "/auth?t=" + data.token+"&payment="+payment;
+                    	}else{
+                    		top.location.href = "/auth?t=" + data.token;
+                    	}
+                        
                     }
                 } else {
                     $scope.error = data.message;

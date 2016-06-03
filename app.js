@@ -21,18 +21,22 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 //app.use(logger('dev'));
+app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.set('jwtKey', "secretofmaarifa");
 app.use(session({ secret: 'secretofmaarifa', maxAge: new Date(Date.now() + 3600000), expires: new Date(Date.now() + 3600000) }));
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/', routes);
-
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(function (req, res, next) {
-	if (req.path == "/api/login" || req.path == "/api/register" || req.path == "/api/update" || req.path == "/api/heartbeat" || req.path.indexOf("/tracker/") > -1) {
+	if (req.path == "/api/login" || req.path == "/api/register" || req.path == "/api/update" || req.path == "/api/heartbeat" || req.path.indexOf("/tracker/") > -1 || req.path.indexOf("givePack") > -1) {
         next();
     } else {
         if(req.path.indexOf("/api/") > -1){
@@ -57,9 +61,7 @@ app.use(function (req, res, next) {
         }
     }
 });
-
 app.use('/api', api);
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(new Error(404));

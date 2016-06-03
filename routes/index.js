@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 var jwtKey = require("../config.js").jwtKey;
+var path = require('path');
+
 
 
 
@@ -41,7 +43,13 @@ router.get('/auth', function (req, res, next) {
                 if (decoded.removeTime > Date.now()){
                     req.session.user = decoded.user;
                     req.session.user.token = req.query["t"];
-                    res.redirect("uxTracker");
+                    if (req.query["payment"] && req.query["payment"].length === 1){
+                        req.session.payment = req.query["payment"];
+                        res.redirect("creditCard");
+                    }else{
+                        res.redirect("uxTracker");
+                    }
+                    
                 } else {
                     res.redirect("login");
                 }
@@ -53,7 +61,7 @@ router.get('/auth', function (req, res, next) {
 });
 
 router.get("/uxTracker", isAuthenticated, function (req, res, next) {
-    res.render("main", {token:req.session.user.token})
+    res.render("main", {token:req.session.user.token,pack:req.session.user.upgraded})
 });
 
 router.get("/Dashboard", isAuthenticated, function (req, res, next) {
@@ -80,18 +88,21 @@ router.get("/AdvancedSettings", isAuthenticated, function (req, res, next) {
   res.render("./innerPages/advancedsettings.jade");
 });
 
+router.get('/Client', function (req, res, next) {
+    res.redirect("uxTracker");
+});
+
 router.get('/', function (req, res, next) {
-    if (isAuthenticated) {
-        res.redirect("uxTracker");
-    } else {
-        res.redirect("login");
-    }
+    res.sendFile(path.resolve('public/index.html'));
 });
 
 router.get('/login', function (req, res, next) {
-	res.render('login');
+    res.render('login');
 });
 
+router.get('/creditCard', isAuthenticated, function(req,res,next){
+    res.render("card", {payment:req.session.payment,user:req.session.user});
+});
 
 
 

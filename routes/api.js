@@ -6,7 +6,8 @@ var mongoConnectLink = require("../config.js").dbLink;
 var jwtKey = require("../config.js").jwtKey;
 var fs = require("fs");
 var ws = require('ws');
-var db = mongoose.connect(mongoConnectLink);
+var db = mongoose.connect("mongodb://localhost:27017/db");
+
 mongoose.connection.on('open', function () {
 	/*
 	mongoose.connection.db.dropDatabase(function (err) {
@@ -31,7 +32,6 @@ router.post("/", function (req, res, next) {
 	});
 });
 
-
 router.post("/getSitesSideBar", function (req, res, next) {
 	var token = req.body.token;
 	jwt.verify(token, jwtKey, function (err, decoded) {
@@ -40,7 +40,7 @@ router.post("/getSitesSideBar", function (req, res, next) {
 				if(!err2){
 					var resList = [];
 					siteList.forEach(function (site) {
-						resList.push({ title: site.title, id:site._id })
+						resList.push({ title: site.title, id:site._id, settings:site.settings})
 					});
 					res.json(resList);
 				}
@@ -90,9 +90,9 @@ router.post("/heartbeat", function (req, res, next) {
 				if (req.session.user.token) {
 					var updateToken = jwt.sign({
 						user: decoded.user,
-						removeTime: Date.now() + 1000 * 60 * 1
+						removeTime: Date.now() + 1000 * 300 * 1
 					}, jwtKey, {
-						expiresInMinutes: 1 // expires in 1 minutes
+						expiresIn: 300 // expires in 5 minutes
 					});
 					req.session.user.token = updateToken;
 					res.json({ type: "bip", token: updateToken });
@@ -116,9 +116,9 @@ router.post('/login', function (req, res, next) {
 				if (passTrue) {
 					var token = jwt.sign({
 						user: user,
-						removeTime: Date.now() + 1000 * 60 * 1
+						removeTime: Date.now() + 1000 * 300 * 1
 					}, jwtKey, {
-						expiresInMinutes: 1 // expires in 1 minutes
+						expiresIn: 300 // expires in 5 minutes
 					});
 					res.json({ type: "auth", token: token });
 				} else {
@@ -149,6 +149,7 @@ router.post("/update", function(req,res,next){
 
  	 		for(var x = 0; x < update.mouseLines.length; x++){
  	 			site.update["mouseLines"].push(update.mouseLines[x]);
+ 	 			console.log(update.mouseLines[x])
  	 		}
 
  	 		if(!site.update["formEvents"]){
@@ -170,6 +171,28 @@ router.post("/update", function(req,res,next){
 router.post("/requestSnap", function(req,res,next){
 	var token = req.body.token;
 
+	jwt.verify(token, jwtKey, function (err, decoded) {
+		if (decoded) {
+			Site.findOne({ _id: req.body.id }, function (err, site) {
+				var options = {
+					windowSize:{ 
+						width: 1920,
+				 		height: 1080 
+				 	},
+				 	quality:100
+				}
+				var newFileName = site.domain.replace(/\./g,"")+Math.floor(Math.random()*1000)+'.png';
+				webshot(site.domain, 'public/snapList/' + newFileName, options ,function(err) {
+				  	res.end('snapList/' + newFileName);
+				});
+			});
+		}
+	});
+});
+
+router.post("/requestSnapSelector", function(req,res,next){
+	var token = req.body.token;
+	var selector = req.body.selector;
 	jwt.verify(token, jwtKey, function (err, decoded) {
 		if (decoded) {
 			Site.findOne({ _id: req.body.id }, function (err, site) {
@@ -213,7 +236,7 @@ router.post('/register', function (req, res, next) {
 		if (!err) {
 			res.json({ type: "regdone", message: "Registration successfully done" });
 		} else {
-			res.json({ type: "regfail", message: "Registration failed" });
+			res.json({ type: "regfail", message: err.message });
 		}
 	});
 });
@@ -234,7 +257,6 @@ router.post("/getWebsite", function (req, res, next) {
 	});
 });
 
-
 router.post("/saveSettings", function (req, res, next) {
 	var token = req.body.token;
 
@@ -249,6 +271,21 @@ router.post("/saveSettings", function (req, res, next) {
 						site.settings[attrname] = newSettings[attrname]; 
 					}
 				};
+				site.markModified("settings");
+				site.save();
+				res.end();
+			});
+		}
+	});
+});
+
+router.post("/editFilters", function(req,res,next){
+	var token = req.body.token;
+
+	jwt.verify(token, jwtKey, function (err, decoded) {
+		if (decoded) {
+			Site.findOne({ _id: req.body.id }, function (err, site) {
+				site.settings.filters = req.body.filters;
 				site.markModified("settings");
 				site.save();
 				res.end();
@@ -307,6 +344,20 @@ router.get("/tracker/:key", function (req, res, next) {
 	}
 });
 
+router.get('/givePack/:id/:pack', function(req,res,next){
+    User.findOne({ _id: req.params.id }, function (err, user) {
+		if (user) {
+			user.upgraded = Number(req.params.pack);
+			req.session.user.upgraded = Number(req.params.pack);
+			user.save(function(){
+				res.redirect("/Client");
+			});
+		}else{
+			res.end("No id found");
+		}
+	});
+});
+
 /* Websocket Part */
 var WebSocketServer = ws.Server
 var wss = new WebSocketServer({ port: 8080 });
@@ -320,7 +371,9 @@ wss.on('connection', function (ws) {
   ws.on('message', function (message) {
 		if (IsJsonString(message)){
 			var data = JSON.parse(message);
+
 			switch (data.type) {
+
 				case "registerSite":
 					if (data.id) {
 						if (signalWaiters[data.id]) {
@@ -349,8 +402,21 @@ wss.on('connection', function (ws) {
 			    break;
 			    case "enableEditMode":
 			    	var target = webSockets.getByIpAddress(data.id,ws);
+			    	ws.advancedKey = data.id;
 			    	if(target){
 			    		target.send("editMode");
+			    	}
+			    break;
+			    case "transformDone":
+			    	var target = webSockets.getByAdvancedTrackId(data.id);
+			    	if(target){
+			    		target.send(message);
+			    	}
+			    break;
+			    case "addTrackerFilter":
+			    	var target = webSockets.getByAdvancedTrackId(data.id);
+			    	if(target){
+			    		target.send(message);
 			    	}
 			    break;
 			}
@@ -394,6 +460,17 @@ Array.prototype.getPathList = function (id) {
     res.pop()
   }
   return res;
+}
+
+Array.prototype.getByAdvancedTrackId = function (id) {
+  	for (var socket in this) {
+	  	if (typeof this[socket].advancedKey != "undefined"){
+	        if (this[socket].advancedKey == id) {
+	          	return this[socket];
+	        }
+	    }
+  	}
+  	return false;
 }
 
 Array.prototype.getByTrackId = function (id) {

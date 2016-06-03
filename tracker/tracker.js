@@ -239,29 +239,62 @@ var debugCanvas = (function () {
 })();
 var editMode = (function () {
     function editMode() {
+        $('head').append('<style type="text/css">.selectedUX{background-color:lightBlue;}.hoverUX:not(.selectedUX) {  background-color:lightGreen;}.selectedUX:hover{  background-color:lightSalmon;}</style>');
+        jQuery.fn.extend({
+            getPath: function () {
+                var path, node = this;
+                while (node.length) {
+                    var realNode = node[0], name = realNode.localName;
+                    if (!name) break;
+                    name = name.toLowerCase();
+
+                    var parent = node.parent();
+
+                    var sameTagSiblings = parent.children(name);
+                    if (sameTagSiblings.length > 1) { 
+                        var allSiblings = parent.children();
+                        var index = allSiblings.index(realNode) + 1;
+                        if (index > 1) {
+                            name += ':nth-child(' + index + ')';
+                        }
+                    }
+
+                    path = name + (path ? '>' + path : '');
+                    node = parent;
+                }
+
+                return path;
+            }
+        });
+
         var _this = this;
         this.selected = false;
         this.select = function (event) {
-            $(".selected").css("background-color", "");
-            $(".selected").removeClass("selected");
-            $(event.target).addClass("selected");
-            $(".selected").css("background-color", "green");
+            $(event.target).addClass("selectedUX");
+            var filterObj = { type: "addTrackerFilter", path: window.location.pathname, id: TRACKING_CODE, filter:$(event.target).getPath() }
+            console.log({ type: "addTrackerFilter", path: window.location.pathname, id: TRACKING_CODE, filter:$(event.target).getPath() })
+            trackerSocket.send(JSON.stringify(filterObj));
             _this.selected = true;
         };
         alert("Edit mode enabled, click on elements to add them tracker.");
         $(document).click(function (event) {
-            _this.select(event);
-        });
-        $(document).mouseover(function (event) {
-            if (!_this.selected) {
-                $(event.target).css("background-color", "lightGreen");
+            if(!$(event.target).hasClass("selectedUX")){
+                _this.select(event);
+                $(event.target).addClass("selectedUX");
+            }else{
+                $(event.target).removeClass("selectedUX");
             }
+        });
+
+        $(document).mouseover(function (event) {
+            $(event.target).addClass("hoverUX");
         });
         $(document).mouseout(function (event) {
-            if (!_this.selected) {
-                $(event.target).css("background-color", "");
-            }
+            $(event.target).removeClass("hoverUX");
         });
+
+
+        trackerSocket.send(JSON.stringify({ type: "transformDone", path: window.location.pathname, id: TRACKING_CODE}));
     }
     return editMode;
 })();
@@ -274,36 +307,52 @@ var script = document.createElement('script');
 script.src = 'http://code.jquery.com/jquery-1.11.0.min.js';
 script.type = 'text/javascript';
 document.getElementsByTagName('head')[0].appendChild(script);
+var TRACKING_CODE = false;
+var trackerSocket = new WebSocket("ws://localhost:8080/");
+trackerSocket.onopen = function (event) {
+    trackerSocket.send(JSON.stringify({ type: "clientNewSession", path: window.location.pathname, id: TRACKING_CODE }));
+};
+trackerSocket.onmessage = function (msg) {
+    switch (msg.data) {
+        case "editMode":
+            new editMode();
+            break;
+    }
+};
+
 (function ($) {
+    
     $.fn.uxtrack = uxtrack;
-    var TRACKING_CODE = false;
-    var trackerSocket = new WebSocket("ws://localhost:8080/");
 
-    trackerSocket.onopen = function (event) {
-        trackerSocket.send(JSON.stringify({ type: "clientNewSession", path: window.location.pathname, id: TRACKING_CODE }));
-    };
-
-    trackerSocket.onmessage = function (msg) {
-        switch (msg.data) {
-            case "editMode":
-                new editMode();
-                break;
-        }
-    };
-
-    var postData = {};
     var formEvents = [];
     var mouseLines = [];
     var clickTracks = [];
 
-
     $(document).ready(function(){
+        var updatePending = 0;
+        var pushUpdate = function(){
+            if ( updatePending >= 20 ){
+                var postData = {};
+                postData.formEvents = formEvents;
+                postData.mouseLines = mouseLines;
+                postData.clickTracks = clickTracks;
+                $.post("http://localhost:44/api/update",{update:JSON.stringify(postData),id:TRACKING_CODE});
+                formEvents = [];
+                mouseLines = [];
+                clickTracks = [];
+                updatePending = 0;
+            }
+        }
         $("body").uxtrack({
             mouseLineTracker: function(c){
                 mouseLines.push(c);
+                updatePending++;
+                pushUpdate();
             },
             clickTracker: function(c){
                 clickTracks.push(c);
+                updatePending++;
+                pushUpdate();
             },
             debugDraw: false,
             eyeTracker: true,
@@ -312,21 +361,11 @@ document.getElementsByTagName('head')[0].appendChild(script);
         $("form").uxtrack({
             formTracker: function(c){
                 formEvents = c;
+                updatePending++;
+                pushUpdate();
             },
         });
-    
-
-        window.onbeforeunload = function (e) {
-            postData.formEvents = formEvents;
-            postData.mouseLines = mouseLines;
-            postData.clickTracks = clickTracks;
-
-            $.post("http://localhost:44/api/update",{update:JSON.stringify(postData),id:TRACKING_CODE});
-
-            for (var i=0;i<100000;i++){
-              console.log(Math.random(0,1)); 
-            };
-        };
     });
-
 })(jQuery);
+
+
