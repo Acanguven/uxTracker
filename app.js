@@ -7,17 +7,18 @@ var bodyParser = require('body-parser');
 var jwt = require('jsonwebtoken');
 var session = require('express-session');
 var config = require("./config.js");
-var http = require("http");
-var routes = require('./routes/index');
-var api = require('./routes/api');
+var routes = require('./routes/index')
+
 
 var app = express();
-serverwss = http.createServer(app);
+app.set('wscreated',false);
+var api = require('./routes/api')(app);
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.set('serverws', server);
 
 
 // uncomment after placing your favicon in /public
