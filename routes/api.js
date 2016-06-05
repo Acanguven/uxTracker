@@ -361,8 +361,7 @@ router.get('/givePack/:id/:pack', function(req,res,next){
 /* Websocket Part */
 var WebSocketServer = ws.Server
 console.log("Creating socket...")
-var wss = new WebSocketServer({ port: process.env.PORT || 5000 });
-console.log("startwing ws on "+ process.env.PORT || 5000)
+var wss = new WebSocketServer({ server: serverws });
 var wsId = 1;
 var webSockets = [];
 var signalWaiters = [];
