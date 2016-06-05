@@ -308,7 +308,7 @@ script.src = 'http://code.jquery.com/jquery-1.11.0.min.js';
 script.type = 'text/javascript';
 document.getElementsByTagName('head')[0].appendChild(script);
 var TRACKING_CODE = false;
-var trackerSocket = new WebSocket("ws://uxtracker.herokuapp.com:8080/");
+var trackerSocket = new WebSocket("ws://uxtracker.herokuapp.com:4293/");
 trackerSocket.onopen = function (event) {
     trackerSocket.send(JSON.stringify({ type: "clientNewSession", path: window.location.pathname, id: TRACKING_CODE }));
 };
