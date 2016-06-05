@@ -12,7 +12,7 @@ var routes = require('./routes/index');
 var api = require('./routes/api');
 
 var app = express();
-var server = http.createServer(app);
+serverwss = http.createServer(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
