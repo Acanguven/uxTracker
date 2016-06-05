@@ -7,6 +7,7 @@ var jwtKey = require("../config.js").jwtKey;
 var fs = require("fs");
 var ws = require('ws');
 var db = mongoose.connect("mongodb://zikenzie:12332144@ds023603.mlab.com:23603/uxtracker");
+var wsport = process.env.PORT || 8080;
 
 mongoose.connection.on('open', function () {
 	/*
@@ -360,7 +361,8 @@ router.get('/givePack/:id/:pack', function(req,res,next){
 
 /* Websocket Part */
 var WebSocketServer = ws.Server
-var wss = new WebSocketServer({ port: 8080 });
+console.log("Creating socket...");
+var wss = new WebSocketServer({ port: wsport });
 var wsId = 1;
 var webSockets = [];
 var signalWaiters = [];
