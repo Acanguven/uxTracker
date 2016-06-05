@@ -6,7 +6,7 @@ var mongoConnectLink = require("../config.js").dbLink;
 var jwtKey = require("../config.js").jwtKey;
 var fs = require("fs");
 var ws = require('ws');
-var db = mongoose.connect("mongodb://localhost:27017/db");
+var db = mongoose.connect("mongodb://zikenzie:12332144@ds023603.mlab.com:23603/uxtracker");
 
 mongoose.connection.on('open', function () {
 	/*
