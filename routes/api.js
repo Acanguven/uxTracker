@@ -360,76 +360,7 @@ router.get('/givePack/:id/:pack', function(req,res,next){
 });
 
 /* Websocket Part */
-var WebSocketServer = ws.Server
-console.log("Creating socket...");
-var wss = new WebSocketServer({ port: 4293 });
-var wsId = 1;
-var webSockets = [];
-var signalWaiters = [];
 
-wss.on('connection', function (ws) {
-	ws.localId = wsId++;
-	webSockets[ws.localId] = ws;
-  ws.on('message', function (message) {
-		if (IsJsonString(message)){
-			var data = JSON.parse(message);
-
-			switch (data.type) {
-
-				case "registerSite":
-					if (data.id) {
-						if (signalWaiters[data.id]) {
-							//Check domain here before release!
-							signalWaiters[data.id].send(JSON.stringify({ type: "signalDone" }));
-							delete signalWaiters[data.id];
-							Site.findOne({ uniqueKey: data.id }, function (err, site) {
-								site.activated = true;
-								site.save();
-							});
-						}
-					}		
-					break;
-				case "waitSiteSignal":
-					signalWaiters[data.id] = ws;
-					break;
-			  	case "clientNewSession":
-				    webSockets[ws.localId].trackKey = data.id;
-				    webSockets[ws.localId].path = data.path;
-				    if (data.prePath !== false) {
-	            
-				    }
-			    break;
-			  	case "requestLiveStats":
-			    	ws.send(JSON.stringify({ type: "liveCount", count: webSockets.getByTrackId(data.id).length, pathList: webSockets.getPathList(data.id) }));
-			    break;
-			    case "enableEditMode":
-			    	var target = webSockets.getByIpAddress(data.id,ws);
-			    	ws.advancedKey = data.id;
-			    	if(target){
-			    		target.send("editMode");
-			    	}
-			    break;
-			    case "transformDone":
-			    	var target = webSockets.getByAdvancedTrackId(data.id);
-			    	if(target){
-			    		target.send(message);
-			    	}
-			    break;
-			    case "addTrackerFilter":
-			    	var target = webSockets.getByAdvancedTrackId(data.id);
-			    	if(target){
-			    		target.send(message);
-			    	}
-			    break;
-			}
-		}
-	});
-	ws.on('close', function close() {
-		delete webSockets[ws.localId];
-		//
-		//
-	});
-});
 
 Array.prototype.getPathList = function (id) {
   var res = [];
