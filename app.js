@@ -172,6 +172,85 @@ app.ws('/ws', function(ws, req) {
   });
 });
 
+function IsJsonString(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+Array.prototype.getPathList = function (id) {
+  var res = [];
+  for (var socket in this) {
+    if (typeof this[socket] != "function") {
+      if (typeof this[socket].path != "undefined" && typeof this[socket].trackKey != "undefined" && this[socket].trackKey == id) {
+        var preventDup = false;
+        for (var x = 0; x < res.length; x++) {
+          if (res[x].label == this[socket].path) {
+            preventDup = true;
+            res[x].data++;
+          }
+        }
+        if (!preventDup) {
+          res.push({ label: this[socket].path, data: 1 });
+        }
+      }
+    }
+  }
+  res.sort(function (a, b) {
+    if (a.data < b.data) {
+      return 1;
+    }
+    if (a.data > b.data) {
+      return -1;
+    }
+    return 0;
+  });
+  while (res.length > 10) {
+    res.pop()
+  }
+  return res;
+}
+
+Array.prototype.getByAdvancedTrackId = function (id) {
+    for (var socket in this) {
+      if (typeof this[socket].advancedKey != "undefined"){
+          if (this[socket].advancedKey == id) {
+              return this[socket];
+          }
+      }
+    }
+    return false;
+}
+
+Array.prototype.getByTrackId = function (id) {
+  var res = [];
+  for (var socket in this) {
+    if(typeof this[socket] != "function"){
+      if(typeof this[socket].trackKey != "undefined"){
+        if (this[socket].trackKey == id) {
+          res.push(socket);
+        }
+      }
+    }
+  }
+  return res;
+}
+
+Array.prototype.getByIpAddress = function (id,self) {
+  for (var socket in this) {
+    if(typeof this[socket] != "function"){
+      if(typeof this[socket].trackKey != "undefined"){
+        if (this[socket].trackKey == id && this[socket].remoteAddress == self.remoteAddress) {
+          return this[socket];
+        }
+      }
+    }
+  }
+  return false;
+}
 
 process.on('uncaughtException', function (err) {
   console.log(err);
