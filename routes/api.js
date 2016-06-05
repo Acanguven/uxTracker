@@ -7,7 +7,6 @@ var jwtKey = require("../config.js").jwtKey;
 var fs = require("fs");
 var ws = require('ws');
 var db = mongoose.connect("mongodb://zikenzie:12332144@ds023603.mlab.com:23603/uxtracker");
-var wsport = process.env.PORT || 8080;
 
 mongoose.connection.on('open', function () {
 	/*
@@ -242,10 +241,6 @@ router.post('/register', function (req, res, next) {
 	});
 });
 
-router.ws("/tt", function(req,res,next){
-	ws.send("AUDI TT");
-})
-
 router.post("/getWebsite", function (req, res, next) {
 	var token = req.body.token;
 
@@ -364,75 +359,76 @@ router.get('/givePack/:id/:pack', function(req,res,next){
 });
 
 /* Websocket Part */
-/*
+var WebSocketServer = ws.Server
+console.log("Creating socket...")
+var wss = new WebSocketServer({ port: 8080 });
 var wsId = 1;
 var webSockets = [];
 var signalWaiters = [];
 
-app.ws('/ws', function(ws, req) {
-  ws.localId = wsId++;
-  webSockets[ws.localId] = ws;
+wss.on('connection', function (ws) {
+	ws.localId = wsId++;
+	webSockets[ws.localId] = ws;
   ws.on('message', function (message) {
-    if (IsJsonString(message)){
-      var data = JSON.parse(message);
+		if (IsJsonString(message)){
+			var data = JSON.parse(message);
 
-      switch (data.type) {
+			switch (data.type) {
 
-        case "registerSite":
-          if (data.id) {
-            if (signalWaiters[data.id]) {
-              //Check domain here before release!
-              signalWaiters[data.id].send(JSON.stringify({ type: "signalDone" }));
-              delete signalWaiters[data.id];
-              Site.findOne({ uniqueKey: data.id }, function (err, site) {
-                site.activated = true;
-                site.save();
-              });
-            }
-          }   
-          break;
-        case "waitSiteSignal":
-          signalWaiters[data.id] = ws;
-          break;
-          case "clientNewSession":
-            webSockets[ws.localId].trackKey = data.id;
-            webSockets[ws.localId].path = data.path;
-            if (data.prePath !== false) {
-              
-            }
-          break;
-          case "requestLiveStats":
-            ws.send(JSON.stringify({ type: "liveCount", count: webSockets.getByTrackId(data.id).length, pathList: webSockets.getPathList(data.id) }));
-          break;
-          case "enableEditMode":
-            var target = webSockets.getByIpAddress(data.id,ws);
-            ws.advancedKey = data.id;
-            if(target){
-              target.send("editMode");
-            }
-          break;
-          case "transformDone":
-            var target = webSockets.getByAdvancedTrackId(data.id);
-            if(target){
-              target.send(message);
-            }
-          break;
-          case "addTrackerFilter":
-            var target = webSockets.getByAdvancedTrackId(data.id);
-            if(target){
-              target.send(message);
-            }
-          break;
-      }
-    }
-  });
-  ws.on('close', function close() {
-    delete webSockets[ws.localId];
-    //
-    //
-  });
+				case "registerSite":
+					if (data.id) {
+						if (signalWaiters[data.id]) {
+							//Check domain here before release!
+							signalWaiters[data.id].send(JSON.stringify({ type: "signalDone" }));
+							delete signalWaiters[data.id];
+							Site.findOne({ uniqueKey: data.id }, function (err, site) {
+								site.activated = true;
+								site.save();
+							});
+						}
+					}		
+					break;
+				case "waitSiteSignal":
+					signalWaiters[data.id] = ws;
+					break;
+			  	case "clientNewSession":
+				    webSockets[ws.localId].trackKey = data.id;
+				    webSockets[ws.localId].path = data.path;
+				    if (data.prePath !== false) {
+	            
+				    }
+			    break;
+			  	case "requestLiveStats":
+			    	ws.send(JSON.stringify({ type: "liveCount", count: webSockets.getByTrackId(data.id).length, pathList: webSockets.getPathList(data.id) }));
+			    break;
+			    case "enableEditMode":
+			    	var target = webSockets.getByIpAddress(data.id,ws);
+			    	ws.advancedKey = data.id;
+			    	if(target){
+			    		target.send("editMode");
+			    	}
+			    break;
+			    case "transformDone":
+			    	var target = webSockets.getByAdvancedTrackId(data.id);
+			    	if(target){
+			    		target.send(message);
+			    	}
+			    break;
+			    case "addTrackerFilter":
+			    	var target = webSockets.getByAdvancedTrackId(data.id);
+			    	if(target){
+			    		target.send(message);
+			    	}
+			    break;
+			}
+		}
+	});
+	ws.on('close', function close() {
+		delete webSockets[ws.localId];
+		//
+		//
+	});
 });
-*/
 
 Array.prototype.getPathList = function (id) {
   var res = [];
