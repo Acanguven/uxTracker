@@ -106,7 +106,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
-server.listen(80, function () { console.log('Listening on ' + server.address().port) });
+server.listen(process.env.PORT || 80, function () { console.log('Listening on ' + server.address().port) });
 
 process.on('uncaughtException', function (err) {
   console.log(err);
