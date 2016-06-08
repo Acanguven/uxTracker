@@ -514,7 +514,8 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   var lineCanvas = document.getElementById('lineTracker');
   lineCanvas.setAttribute('width', $("#eyeTracker").width());
   lineCanvas.setAttribute('height', $("#eyeTracker").height());
-  var hmcanvas = document.getElementById('lineTracker');
+  
+  var hmcanvas = document.getElementById('hmbg');
   hmcanvas.setAttribute('width', $(".heatMap").width());
   hmcanvas.setAttribute('height', $(".heatMap").height());
   var hmcanvasctx = hmcanvas.getContext('2d');
