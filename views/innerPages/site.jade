@@ -67,7 +67,7 @@
         .tools
           a.collapse(href="javascript:;")
       .portlet-body
-        canvas#lineTracker(style="width:100%;height:420px;")        
+        canvas#lineTracker(style="width:100%;height:420px;")          
   .col-md-6(ng-show="website.settings.click")
     .portlet
       .portlet-title
@@ -78,3 +78,13 @@
           a.collapse(href="javascript:;")
       .portlet-body
         canvas#clickTracker(style="width:100%;height:420px;")         
+  .col-md-12(ng-show="website.settings.line")
+    .portlet
+      .portlet-title
+        .caption
+          i.fa.fa-reorder
+          | Heatmap
+        .tools
+          a.collapse(href="javascript:;")
+      .portlet-body
+        canvas.heatMap(style="width:100%;height:420px;")  

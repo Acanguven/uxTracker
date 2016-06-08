@@ -524,6 +524,12 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   linectx.font = "30px Arial";
   linectx.fillText("Loading stats...",10,50);
 
+  var heatmapInstance = h337.create({
+    // only container is required, the rest will be defaults
+    container: document.querySelector('.heatMap')
+  });
+
+
   var updates;
   $http.post("../api/getUpdates", { token: uxToken, id: $routeParams.id }).success(function (data) {
     updates = data;
@@ -537,7 +543,7 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
       drawImageScaled(img,eyectx);
       drawImageScaled(img,clickctx);
       drawImageScaled(img,linectx);
-
+      var points = [];
 
       //work mouseline
       for(var x = 0; x < updates.mouseLines.length; x++){
@@ -548,10 +554,21 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
           var Vratio2 = lineCanvas.height*updates.mouseLines[x+1].y/updates.mouseLines[x+1].height;
           linectx.beginPath();
           linectx.moveTo(Hratio2, Vratio2);
+          points.push({
+            x:Hratio1,
+            y:Vratio1,
+            value:1
+          });
           linectx.lineTo(Hratio1, Vratio1);
           linectx.stroke();
         }
       }
+
+      var data = { 
+        max: 100, 
+        data: points 
+      };
+      heatmapInstance.setData(data);
 
       for(var x = 0; x < updates.clickTracks.length; x++){
         if(x  < updates.mouseLines.length - 1){
