@@ -8,7 +8,7 @@ var SiteSchema = new Schema({
     domain: { type: String, required: true, unique: true },
     uniqueKey: { type: String, required: true },
     owner: { type: ObjectId },
-    activated: { type: Boolean, default: false },
+    activated: { type: Boolean, default: true },
     settings: { type: Object, default: {} },
     pathFlow: {type: Object, default : {}},
     update:{type:Object,default:{}}

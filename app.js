@@ -1,4 +1,5 @@
-﻿var express = require('express');
+﻿var server = require('http').createServer();
+var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -6,13 +7,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var jwt = require('jsonwebtoken');
 var session = require('express-session');
+var ws = require('ws');
 var config = require("./config.js");
 var routes = require('./routes/index')
 
-
 var app = express();
-app.set('wscreated',false);
-var api = require('./routes/api')(app);
+server.on('request', app);
+
+var api = require('./routes/api');
 
 
 
@@ -104,8 +106,163 @@ app.use(function(err, req, res, next) {
   });
 });
 
+server.listen(80, function () { console.log('Listening on ' + server.address().port) });
+
 process.on('uncaughtException', function (err) {
   console.log(err);
+});
+
+
+
+
+Array.prototype.getPathList = function (id) {
+  var res = [];
+  for (var socket in this) {
+    if (typeof this[socket] != "function") {
+      if (typeof this[socket].path != "undefined" && typeof this[socket].trackKey != "undefined" && this[socket].trackKey == id) {
+        var preventDup = false;
+        for (var x = 0; x < res.length; x++) {
+          if (res[x].label == this[socket].path) {
+            preventDup = true;
+            res[x].data++;
+          }
+        }
+        if (!preventDup) {
+          res.push({ label: this[socket].path, data: 1 });
+        }
+      }
+    }
+  }
+  res.sort(function (a, b) {
+    if (a.data < b.data) {
+      return 1;
+    }
+    if (a.data > b.data) {
+      return -1;
+    }
+    return 0;
+  });
+  while (res.length > 10) {
+    res.pop()
+  }
+  return res;
+}
+
+Array.prototype.getByAdvancedTrackId = function (id) {
+    for (var socket in this) {
+      if (typeof this[socket].advancedKey != "undefined"){
+          if (this[socket].advancedKey == id) {
+              return this[socket];
+          }
+      }
+    }
+    return false;
+}
+
+Array.prototype.getByTrackId = function (id) {
+  var res = [];
+  for (var socket in this) {
+    if(typeof this[socket] != "function"){
+      if(typeof this[socket].trackKey != "undefined"){
+        if (this[socket].trackKey == id) {
+          res.push(socket);
+        }
+      }
+    }
+  }
+  return res;
+}
+
+Array.prototype.getByIpAddress = function (id,self) {
+  for (var socket in this) {
+    if(typeof this[socket] != "function"){
+      if(typeof this[socket].trackKey != "undefined"){
+        if (this[socket].trackKey == id && this[socket].remoteAddress == self.remoteAddress) {
+          return this[socket];
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function IsJsonString(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+var WebSocketServer = ws.Server
+var wss = new WebSocketServer({ server: server});
+var wsId = 1;
+var webSockets = [];
+var signalWaiters = [];
+
+wss.on('connection', function (ws) {
+  ws.localId = wsId++;
+  webSockets[ws.localId] = ws;
+  ws.on('message', function (message) {
+    if (IsJsonString(message)){
+      var data = JSON.parse(message);
+
+      switch (data.type) {
+
+        case "registerSite":
+          if (data.id) {
+            if (signalWaiters[data.id]) {
+              //Check domain here before release!
+              signalWaiters[data.id].send(JSON.stringify({ type: "signalDone" }));
+              delete signalWaiters[data.id];
+              /*Site.findOne({ uniqueKey: data.id }, function (err, site) {
+                site.activated = true;
+                site.save();
+              });*/
+            }
+          }   
+          break;
+        case "waitSiteSignal":
+          signalWaiters[data.id] = ws;
+          break;
+          case "clientNewSession":
+            webSockets[ws.localId].trackKey = data.id;
+            webSockets[ws.localId].path = data.path;
+            if (data.prePath !== false) {
+              
+            }
+          break;
+          case "requestLiveStats":
+            ws.send(JSON.stringify({ type: "liveCount", count: webSockets.getByTrackId(data.id).length, pathList: webSockets.getPathList(data.id) }));
+          break;
+          case "enableEditMode":
+            var target = webSockets.getByIpAddress(data.id,ws);
+            ws.advancedKey = data.id;
+            if(target){
+              target.send("editMode");
+            }
+          break;
+          case "transformDone":
+            var target = webSockets.getByAdvancedTrackId(data.id);
+            if(target){
+              target.send(message);
+            }
+          break;
+          case "addTrackerFilter":
+            var target = webSockets.getByAdvancedTrackId(data.id);
+            if(target){
+              target.send(message);
+            }
+          break;
+      }
+    }
+  });
+  ws.on('close', function close() {
+    delete webSockets[ws.localId];
+    //
+    //
+  });
 });
 
 

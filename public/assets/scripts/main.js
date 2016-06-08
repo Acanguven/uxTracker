@@ -182,7 +182,7 @@ app.controller("AdvancedSettings", function($scope,$http,$routeParams,websocketS
   });
 
   $scope.ws = false;
-  websocketService.start("ws://uxtracker.herokuapp.com/ws", function (ws) {
+  websocketService.start("ws://uxtracker.herokuapp.com", function (ws) {
     $scope.ws = ws;
   }, function (msg) {
     var data = JSON.parse(msg.data);
@@ -333,7 +333,7 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   $scope.liveCounter = 0;
   $scope.ws = false;
   
-  websocketService.start("ws://uxtracker.herokuapp.com/ws", function (ws) {
+  websocketService.start("ws://uxtracker.herokuapp.com", function (ws) {
     $scope.ws = ws;
     $scope.intPromise = $interval(function () {
       $scope.ws.send(JSON.stringify({ type: "requestLiveStats", id: ($scope.website.uniqueKey ? $scope.website.uniqueKey : "") }))
@@ -631,7 +631,7 @@ app.controller("AddNewSite", function ($scope, $http, websocketService, service)
   $scope.formsDone = false;
   $scope.code = "";
 
-  websocketService.start("ws://uxtracker.herokuapp.com/ws", function (ws) {
+  websocketService.start("ws://uxtracker.herokuapp.com", function (ws) {
     $scope.ws = ws;
   }, function (msg) {
     var data = JSON.parse(msg.data);
