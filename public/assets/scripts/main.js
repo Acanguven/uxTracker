@@ -514,6 +514,11 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
   var lineCanvas = document.getElementById('lineTracker');
   lineCanvas.setAttribute('width', $("#eyeTracker").width());
   lineCanvas.setAttribute('height', $("#eyeTracker").height());
+  var hmcanvas = document.getElementById('lineTracker');
+  hmcanvas.setAttribute('width', $(".heatMap").width());
+  hmcanvas.setAttribute('height', $(".heatMap").height());
+  var hmcanvasctx = hmcanvas.getContext('2d');
+
   var eyectx = eyeCanvas.getContext('2d');
   var clickctx = clickCanvas.getContext('2d');
   var linectx = lineCanvas.getContext('2d');
@@ -543,6 +548,7 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
       drawImageScaled(img,eyectx);
       drawImageScaled(img,clickctx);
       drawImageScaled(img,linectx);
+      drawImageScaledHm(img,hmcanvasctx);
       var points = [];
 
       //work mouseline
@@ -550,13 +556,18 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
         if(x  < updates.mouseLines.length - 1){
           var Hratio1 = lineCanvas.width*updates.mouseLines[x].x/updates.mouseLines[x].width;
           var Hratio2 = lineCanvas.width*updates.mouseLines[x+1].x/updates.mouseLines[x+1].width;
+
           var Vratio1 = lineCanvas.height*updates.mouseLines[x].y/updates.mouseLines[x].height;
           var Vratio2 = lineCanvas.height*updates.mouseLines[x+1].y/updates.mouseLines[x+1].height;
+
+          var Hratio1Hm = hmcanvas.width*updates.mouseLines[x].x/updates.mouseLines[x].width;
+          var Vratio1Hm = hmcanvas.height*updates.mouseLines[x].y/updates.mouseLines[x].height;
+
           linectx.beginPath();
           linectx.moveTo(Hratio2, Vratio2);
           points.push({
-            x:Hratio1,
-            y:Vratio1,
+            x:Hratio1Hm,
+            y:Vratio1Hm,
             value:1
           });
           linectx.lineTo(Hratio1, Vratio1);
@@ -586,6 +597,12 @@ app.controller("Site", function ($scope, $http, $routeParams, $interval, websock
     var height = $("#eyeTracker").height();
     ctx.clearRect(0, 0, $("#eyeTracker").width(), $("#eyeTracker").height());
     ctx.drawImage(img,0,0,1920,1080,0,0,$("#eyeTracker").width(),height);
+  }
+
+  function drawImageScaledHm(img, ctx) {
+    var height = $(".heatMap").height();
+    ctx.clearRect(0, 0, $(".heatMap").width(), $(".heatMap").height());
+    ctx.drawImage(img,0,0,1920,1080,0,0,$(".heatMap").width(),height);
   }
 });
 
